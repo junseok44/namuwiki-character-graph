@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>등장인물 관계 그래프 생성기</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <!-- 사이드바 -->
+    <div id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h2>저장된 관계도</h2>
+        <button id="sidebar-close" class="sidebar-close">×</button>
+      </div>
+      <div id="sidebar-list" class="sidebar-list"></div>
+    </div>
+
+    <!-- 사이드바 오버레이 -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+    <div class="container">
+      <header>
+        <div class="header-top">
+          <button id="sidebar-toggle" class="sidebar-toggle">☰ 저장된 관계도</button>
+          <h1>등장인물 관계 그래프 생성기</h1>
+        </div>
+        <p>작품명을 입력하면 나무위키에서 등장인물 관계 그래프를 생성합니다.</p>
+      </header>
+
+      <div class="input-section">
+        <div class="input-group">
+          <label for="keyword">작품명:</label>
+          <input type="text" id="keyword" placeholder="예: 유희왕 5D's" />
+          <button id="extract-btn">관계도 생성</button>
+        </div>
+      </div>
+
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">처리 중...</p>
+      </div>
+
+      <div id="graph-section" class="section hidden">
+        <div class="graph-header">
+          <h2 id="graph-title">관계 그래프</h2>
+          <button id="back-to-main" class="btn-back hidden">← 메인으로</button>
+        </div>
+        <div id="graph-container"></div>
+      </div>
+
+      <div id="error" class="error hidden"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
