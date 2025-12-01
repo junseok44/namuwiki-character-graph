@@ -75,7 +75,7 @@ def print_ai_request_stats():
     print("="*50)
 
 
-def call_ai_api(messages: List[Dict[str, str]], model: str = "gpt-5-mini", temperature: Optional[float] = None) -> str:
+def call_ai_api(messages: List[Dict[str, str]], model: str = "gpt-4o-mini", temperature: Optional[float] = None) -> str:
     """
     OpenAI API 호출
     

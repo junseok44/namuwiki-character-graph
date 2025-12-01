@@ -33,11 +33,11 @@ def extract_character_relationships_with_ai(keyword: str, all_documents: List[Di
                 character_to_image_urls[clean_title] = real_urls
                 character_to_image_urls[title] = real_urls
     
-    # 모든 문서 텍스트와 이미지 목록 합치기
+    # 모든 문서 텍스트와 이미지 목록 합치기 (최적화: 텍스트 길이 제한)
     combined_text = ""
     for doc in all_documents:
         title = doc.get('title', 'Unknown')
-        text = doc.get('text', '')[:5000]  # 각 문서당 최대 5000자
+        text = doc.get('text', '')[:3000]  # 각 문서당 최대 3000자로 단축 (5000 -> 3000)
         image_urls = doc.get('image_urls', [])
         
         combined_text += f"\n\n=== {title} ===\n"
@@ -48,25 +48,21 @@ def extract_character_relationships_with_ai(keyword: str, all_documents: List[Di
             # 실제 URL만 우선 표시
             real_urls = [img for img in image_urls if (img.get('url') if isinstance(img, dict) else img).startswith('http')]
             
-            for idx, img_info in enumerate(real_urls[:5], 1):  # 최대 5개
+            for idx, img_info in enumerate(real_urls[:3], 1):  # 최대 3개로 단축 (5 -> 3)
                 if isinstance(img_info, dict):
                     url = img_info.get('url', '')
                     alt = img_info.get('alt', '')
-                    context = img_info.get('context', '')
                 else:
                     url = img_info
                     alt = ''
-                    context = ''
                 
                 img_text = f"{idx}. {url}"
                 if alt:
                     img_text += f" (alt: {alt})"
-                if context:
-                    img_text += f" [주변: {context[:80]}...]"
                 combined_text += img_text + "\n"
             
-            if len(real_urls) > 7:
-                combined_text += f"... 외 {len(real_urls) - 7}개 이미지 더 있음\n"
+            if len(real_urls) > 3:
+                combined_text += f"... 외 {len(real_urls) - 3}개 이미지 더 있음\n"
             combined_text += "\n"
         
         combined_text += text
@@ -79,9 +75,9 @@ def extract_character_relationships_with_ai(keyword: str, all_documents: List[Di
             if title:
                 character_doc_titles.append(title)
     
-    # 전체 텍스트가 너무 길면 잘라내기
-    if len(combined_text) > 25000:
-        combined_text = combined_text[:25000] + "\n\n... (내용이 길어 일부 생략) ..."
+    # 전체 텍스트가 너무 길면 잘라내기 (15000자로 단축)
+    if len(combined_text) > 15000:
+        combined_text = combined_text[:15000] + "\n\n... (내용이 길어 일부 생략) ..."
     
     character_list_text = ""
     if character_doc_titles:
