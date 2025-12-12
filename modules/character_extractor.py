@@ -69,16 +69,10 @@ def extract_character_names_with_ai(keyword: str, main_doc_text: str, character_
                 character_names = character_names[:max_characters]
                 print(f"⚠️  추출된 인물이 {max_characters}명을 초과하여 {max_characters}명으로 제한했습니다.")
             elapsed_time = time.time() - start_time
-            if len(character_names) == 0:
-                print(f"⚠️  AI가 0명의 인물을 추출했습니다. (전체 소요 시간: {elapsed_time:.2f}초)")
-                print(f"   파싱된 JSON: {character_names}")
-            else:
-                print(f"✅ AI가 {len(character_names)}명의 인물을 추출했습니다. (전체 소요 시간: {elapsed_time:.2f}초)")
-                print(f"   추출된 인물: {character_names[:10]}")  # 처음 10개만 출력
+            print(f"✅ AI가 {len(character_names)}명의 인물을 추출했습니다. (전체 소요 시간: {elapsed_time:.2f}초)")
             return character_names
         else:
-            print(f"⚠️  AI 응답이 리스트가 아닙니다. 타입: {type(character_names)}")
-            print(f"   응답 내용: {character_names}")
+            print(f"⚠️  AI 응답이 리스트가 아닙니다.")
             return []
     except json.JSONDecodeError as e:
         print(f"⚠️  JSON 파싱 실패: {e}")
