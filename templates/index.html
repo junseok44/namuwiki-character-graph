@@ -36,6 +36,21 @@
         <div class="input-group">
           <label for="keyword">작품명:</label>
           <input type="text" id="keyword" placeholder="예: 유희왕 5D's" />
+        </div>
+        
+        <div class="model-selection-section">
+          <label for="model-select" class="model-selection-label">AI 모델:</label>
+          <select id="model-select" name="model" class="model-select">
+            <option value="gpt-4o-mini" data-time="30-40초" data-complexity="기본 복잡도 (간선 수 적음, 주요 관계만 추출)">GPT-4o Mini (30-40초)</option>
+            <option value="gpt-5" data-time="1분-1분 30초" data-complexity="고복잡도 (간선 수 많음, 세부 관계까지 추출, 더 많은 인물 포함)">GPT-5 (1분-1분 30초)</option>
+          </select>
+          <div class="model-info-text">
+            <span id="model-time">⏱️ 예상 소요시간: 30-40초</span>
+            <span id="model-complexity">📊 그래프 복잡도: 기본 복잡도 (간선 수 적음, 주요 관계만 추출)</span>
+          </div>
+        </div>
+        
+        <div class="input-group">
           <button id="extract-btn">관계도 생성</button>
         </div>
       </div>

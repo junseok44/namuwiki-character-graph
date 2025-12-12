@@ -5,13 +5,14 @@ from typing import List, Dict, Any
 from .ai_service import call_ai_api
 
 
-def extract_character_relationships_with_ai(keyword: str, all_documents: List[Dict[str, Any]]) -> Dict[str, Any]:
+def extract_character_relationships_with_ai(keyword: str, all_documents: List[Dict[str, Any]], model: str = "gpt-4o-mini") -> Dict[str, Any]:
     """
     AI를 사용하여 모든 문서에서 인물 관계 그래프 추출
     
     Args:
         keyword: 검색 키워드
         all_documents: 모든 문서 리스트 (각각 title, text, image_src 포함)
+        model: 사용할 AI 모델 (gpt-4o-mini 또는 gpt-5)
     
     Returns:
         관계 그래프 데이터 (JSON 형태)
@@ -137,7 +138,7 @@ def extract_character_relationships_with_ai(keyword: str, all_documents: List[Di
     ]
     
     try:
-        response = call_ai_api(messages, temperature=0.5)
+        response = call_ai_api(messages, model=model, temperature=0.5)
         # JSON 파싱
         response = response.strip()
         

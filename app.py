@@ -184,6 +184,11 @@ def generate_graph():
         keyword = req_data.get('keyword')
         character_documents = req_data.get('character_documents', [])  # 클라이언트에서 크롤링한 문서들
         character_names = req_data.get('character_names', [])
+        model = req_data.get('model', 'gpt-4o-mini')  # 기본값: gpt-4o-mini
+        
+        # 모델 검증
+        if model not in ['gpt-4o-mini', 'gpt-5']:
+            return jsonify({'error': '지원하지 않는 모델입니다. gpt-4o-mini 또는 gpt-5만 사용 가능합니다.'}), 400
         
         if not keyword:
             return jsonify({'error': 'keyword가 필요합니다.'}), 400
@@ -263,8 +268,8 @@ def generate_graph():
         print(f"\n✅ 총 {len(all_documents)}개의 문서를 수집했습니다.")
         
         # 4. 모든 문서 합쳐서 AI에게 관계 그래프 요청
-        print("AI를 사용한 관계 그래프 생성 중...")
-        graph_data = extract_character_relationships_with_ai(keyword, all_documents)
+        print(f"AI를 사용한 관계 그래프 생성 중... (모델: {model})")
+        graph_data = extract_character_relationships_with_ai(keyword, all_documents, model=model)
         
         return jsonify({
             'success': True,

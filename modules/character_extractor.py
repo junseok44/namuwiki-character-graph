@@ -43,7 +43,8 @@ def extract_character_names_with_ai(keyword: str, main_doc_text: str, character_
     ]
     
     try:
-        response = call_ai_api(messages)
+        # 인물 추출은 gpt-4o-mini 고정
+        response = call_ai_api(messages, model="gpt-4o-mini")
         # JSON 배열 파싱
         response = response.strip()
         

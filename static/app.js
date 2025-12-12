@@ -134,6 +134,10 @@ async function handleGenerate() {
             loadingText.textContent = '관계도 생성 중...';
         }
         
+        // 선택된 모델 가져오기
+        const modelSelect = document.getElementById('model-select');
+        const selectedModel = modelSelect?.value || 'gpt-4o-mini';
+        
         const graphResponse = await fetch('/api/generate-graph', {
             method: 'POST',
             headers: {
@@ -143,6 +147,7 @@ async function handleGenerate() {
                 keyword: currentKeyword,
                 character_names: currentCharacters,
                 character_documents: crawlData.documents,
+                model: selectedModel,
             }),
         });
         
@@ -763,10 +768,45 @@ function init() {
     // 저장된 관계도 목록 표시
     updateSavedGraphsList();
     
+    // 모델 선택 드롭다운 이벤트 리스너
+    const modelSelect = document.getElementById('model-select');
+    const modelTime = document.getElementById('model-time');
+    const modelComplexity = document.getElementById('model-complexity');
+    
+    if (modelSelect && modelTime && modelComplexity) {
+        // 초기 정보 설정
+        updateModelInfo(modelSelect.value);
+        
+        // 드롭다운 변경 시 정보 업데이트
+        modelSelect.addEventListener('change', (e) => {
+            updateModelInfo(e.target.value);
+        });
+    }
+    
     // 초기화 완료 플래그 설정
     isInitialized = true;
     
     console.log('초기화 완료');
+}
+
+// 모델 정보 업데이트 함수
+function updateModelInfo(modelValue) {
+    const modelSelect = document.getElementById('model-select');
+    const modelTime = document.getElementById('model-time');
+    const modelComplexity = document.getElementById('model-complexity');
+    
+    if (!modelSelect || !modelTime || !modelComplexity) return;
+    
+    const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+    const time = selectedOption.getAttribute('data-time');
+    const complexity = selectedOption.getAttribute('data-complexity');
+    
+    if (time) {
+        modelTime.textContent = `⏱️ 예상 소요시간: ${time}`;
+    }
+    if (complexity) {
+        modelComplexity.textContent = `📊 그래프 복잡도: ${complexity}`;
+    }
 }
 
 // DOM 로드 완료 시 초기화
