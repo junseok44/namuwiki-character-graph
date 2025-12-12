@@ -19,6 +19,7 @@ from modules.namuwiki_dataset import (
 from modules.document_search import (
     find_document_by_exact_title_indexed,
     find_document_by_keyword_included,
+    find_most_similar_document,
 )
 from modules.image_extractor import extract_all_image_urls
 from modules.character_extractor import extract_character_names_with_ai
@@ -78,36 +79,29 @@ def extract_characters():
         # AI 요청 통계 초기화
         reset_ai_request_stats()
         
-        # 1. keyword 문서와 keyword/등장인물 문서 찾기
-        main_doc_idx, main_doc = find_document_by_exact_title_indexed(
-            title_to_indices, data, keyword
+        # 1. 두 개의 독립적인 프로세스로 가장 유사한 문서 찾기
+        
+        # 프로세스 1: keyword와 가장 유사한 메인 문서 찾기
+        main_doc_idx, main_doc, matched_main_title, main_similarity = find_most_similar_document(
+            title_list, title_to_indices, data, keyword, suffix=None, verbose=False
         )
         
-        # 정확히 일치하는 문서를 찾지 못하면 keyword가 포함된 문서로 대체
         if main_doc_idx is None:
-            print(f"⚠️  '{keyword}' 문서를 정확히 찾을 수 없습니다. keyword가 포함된 문서를 검색합니다...")
-            main_doc_idx, main_doc = find_document_by_keyword_included(
-                title_list, data, keyword
-            )
-            if main_doc_idx is None:
-                return jsonify({'error': f"'{keyword}' 관련 문서를 찾을 수 없습니다."}), 404
+            return jsonify({'error': f"'{keyword}' 관련 문서를 찾을 수 없습니다."}), 404
         
-        # keyword/등장인물 문서 찾기
-        character_list_title = f"{keyword}/등장인물"
-        char_list_doc_idx, char_list_doc = find_document_by_exact_title_indexed(
-            title_to_indices, data, character_list_title
+        # 프로세스 2: keyword와 가장 유사한 등장인물 문서 찾기
+        char_doc_idx, char_doc, matched_char_title, char_similarity = find_most_similar_document(
+            title_list, title_to_indices, data, keyword, suffix="/등장인물", verbose=False
         )
         
-        if char_list_doc_idx is None:
-            char_list_doc_idx, char_list_doc = find_document_by_keyword_included(
-                title_list, data, keyword, suffix="/등장인물"
-            )
-            if char_list_doc_idx is None:
-                char_list_doc = {'title': '', 'text': ''}
+        if char_doc_idx is None:
+            char_doc = {'title': '', 'text': ''}
+            matched_char_title = None
+            char_similarity = 0.0
         
         # 2. AI에게 두 문서 내용 보내서 인물 리스트 추출 (최대 20명)
         main_doc_text = main_doc.get('text', '')
-        char_list_doc_text = char_list_doc.get('text', '')
+        char_list_doc_text = char_doc.get('text', '')
         
         character_names = extract_character_names_with_ai(
             keyword, main_doc_text, char_list_doc_text, max_characters=20
@@ -126,8 +120,8 @@ def extract_characters():
                 'index': main_doc_idx
             },
             'character_list_document': {
-                'title': char_list_doc.get('title', ''),
-                'index': char_list_doc_idx if char_list_doc_idx else None
+                'title': char_doc.get('title', ''),
+                'index': char_doc_idx if char_doc_idx else None
             }
         })
         
@@ -201,15 +195,11 @@ def generate_graph():
         
         all_documents = []
         
-        # 메인 문서와 등장인물 목록 문서 찾기
-        main_doc_idx, main_doc = find_document_by_exact_title_indexed(
-            title_to_indices, data, keyword
+        # 메인 문서와 등장인물 목록 문서 찾기 (유사도 기반)
+        # 프로세스 1: 메인 문서 찾기
+        main_doc_idx, main_doc, matched_main_title, main_similarity = find_most_similar_document(
+            title_list, title_to_indices, data, keyword, suffix=None, verbose=False
         )
-        
-        if main_doc_idx is None:
-            main_doc_idx, main_doc = find_document_by_keyword_included(
-                title_list, data, keyword
-            )
         
         if main_doc:
             main_doc_text = main_doc.get('text', '')
@@ -220,17 +210,13 @@ def generate_graph():
                 'image_urls': main_image_urls,
                 'type': 'main'
             })
+        else:
+            print(f"⚠️  메인 문서를 찾을 수 없습니다.")
         
-        # 등장인물 목록 문서 추가
-        character_list_title = f"{keyword}/등장인물"
-        char_list_doc_idx, char_list_doc = find_document_by_exact_title_indexed(
-            title_to_indices, data, character_list_title
+        # 프로세스 2: 등장인물 목록 문서 찾기
+        char_doc_idx, char_list_doc, matched_char_title, char_similarity = find_most_similar_document(
+            title_list, title_to_indices, data, keyword, suffix="/등장인물", verbose=False
         )
-        
-        if char_list_doc_idx is None:
-            char_list_doc_idx, char_list_doc = find_document_by_keyword_included(
-                title_list, data, keyword, suffix="/등장인물"
-            )
         
         if char_list_doc and char_list_doc.get('text'):
             char_list_doc_text = char_list_doc.get('text', '')
