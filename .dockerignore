@@ -1,0 +1,14 @@
+# 데이터 폴더 제외
+data/
+
+# 파이썬 캐시 파일 제외
+__pycache__/
+*.pyc
+*.egg-info/
+
+# 기타 로컬 파일 제외
+.git
+.gitignore
+.env
+
+Todo.md
