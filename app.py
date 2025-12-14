@@ -7,8 +7,11 @@ from flask_cors import CORS
 
 # 현재 프로젝트 폴더의 데이터 경로
 BASE_DIR = os.path.dirname(__file__)
-DATASET_PATH = os.path.join(BASE_DIR, 'data')
-INDEX_CACHE_FILE = os.path.join(BASE_DIR, 'title_index_cache.pkl')
+DEFAULT_DATA_PATH = os.path.join(BASE_DIR, 'data')
+DATASET_PATH = os.environ.get('DATA_DIR', DEFAULT_DATA_PATH)
+
+# 인덱스 파일 경로도 DATASET_PATH를 기준으로 설정
+INDEX_CACHE_FILE = os.path.join(DATASET_PATH, 'title_index_cache.pkl')
 
 # 현재 프로젝트의 modules 사용
 from modules.namuwiki_dataset import (

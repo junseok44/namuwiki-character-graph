@@ -7,11 +7,6 @@ import os
 from typing import List, Tuple
 from collections import defaultdict
 
-# 데이터셋 경로
-DATASET_PATH = "./data"
-INDEX_CACHE_FILE = "./title_index_cache.pkl"
-
-
 def normalize_title(title: str) -> str:
     """
     제목 정규화: 소문자 변환 + 모든 공백 제거
@@ -20,7 +15,7 @@ def normalize_title(title: str) -> str:
     return re.sub(r'\s+', '', title.lower().strip())
 
 
-def load_namuwiki_dataset(cache_dir: str = DATASET_PATH):
+def load_namuwiki_dataset(cache_dir: str):
     """나무위키 데이터셋 로드"""
     print(f"데이터셋 로드 중: {cache_dir}")
     dataset = load_dataset(
@@ -41,7 +36,7 @@ def get_data_from_dataset(dataset):
     return data
 
 
-def build_title_index(data, cache_file: str = INDEX_CACHE_FILE, force_rebuild: bool = False) -> Tuple[dict, List[tuple]]:
+def build_title_index(data, cache_file: str, force_rebuild: bool = False) -> Tuple[dict, List[tuple]]:
     """
     전체 데이터셋을 한 번 순회하여 제목 인덱스 생성
     캐시 파일이 있으면 로드, 없으면 생성 후 저장
