@@ -122,39 +122,40 @@ def find_all_candidates_by_keyword(
     title_list: List[tuple], 
     keyword: str, 
     suffix: str = None,
-    verbose: bool = True
+    verbose: bool = True,
+    top_k: int = 5,
 ) -> List[Tuple[int, str, str, float]]:
     """
-    keyword가 포함된 모든 후보 문서 수집 (유사도 포함)
+    keyword와 가장 유사한 후보 문서 수집 (유사도 포함)
     
     Args:
         title_list: (idx, original_title, normalized_title) 리스트
         keyword: 검색할 키워드
         suffix: 제목 끝에 있어야 할 접미사 (예: "/등장인물")
-        verbose: 로그 출력 여부
+        verbose: 로그 출력 여부 (현재는 사용하지 않음)
+        top_k: 유사도가 높은 상위 몇 개를 반환할지
     
     Returns:
-        [(idx, original_title, normalized_title, similarity), ...] 리스트
-        유사도 순으로 정렬되지 않음 (나중에 정렬)
+        유사도 순으로 정렬된 상위 top_k 리스트:
+        [(idx, original_title, normalized_title, similarity), ...]
     """
-    normalized_keyword = normalize_title(keyword)
     normalized_suffix = normalize_title(suffix) if suffix else None
     
     candidates = []
     
     for idx, original_title, normalized_title in title_list:
-        # keyword가 포함되어 있는지 확인
-        if normalized_keyword in normalized_title:
-            # suffix가 지정되어 있으면 suffix로 끝나는지 확인
-            if normalized_suffix:
-                if not normalized_title.endswith(normalized_suffix):
-                    continue
-            
-            # 유사도 계산
-            similarity = calculate_title_similarity(keyword, normalized_title)
-            candidates.append((idx, original_title, normalized_title, similarity))
+        # suffix가 지정되어 있으면 suffix로 끝나는지 확인
+        if normalized_suffix:
+            if not normalized_title.endswith(normalized_suffix):
+                continue
+        
+        # 전체 제목에 대해 유사도 계산 (keyword가 제목에 포함되지 않아도 허용)
+        similarity = calculate_title_similarity(keyword, normalized_title)
+        candidates.append((idx, original_title, normalized_title, similarity))
     
-    return candidates
+    # 유사도 내림차순으로 정렬 후 상위 top_k만 반환
+    candidates.sort(key=lambda x: x[3], reverse=True)
+    return candidates[:top_k]
 
 
 def find_most_similar_document(
@@ -209,8 +210,14 @@ def find_most_similar_document(
             else:
                 return idx, doc, exact_title, 1.0
     
-    # 2. 모든 후보 수집
-    candidates = find_all_candidates_by_keyword(title_list, keyword, suffix, verbose=False)
+    # 2. 모든 후보 수집 (유사도 상위 top_k만 사용)
+    candidates = find_all_candidates_by_keyword(
+        title_list, 
+        keyword, 
+        suffix, 
+        verbose=False,
+        top_k=5,
+    )
     
     if not candidates:
         return None, None, None, 0.0
