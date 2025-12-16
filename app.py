@@ -142,6 +142,53 @@ def extract_characters():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/search-document', methods=['POST'])
+def search_document():
+    """
+    keyword로 가장 유사한 나무위키 문서를 찾아
+    제목과 내용 일부를 반환하는 테스트용 API
+    """
+    try:
+        req_data = request.get_json()
+        keyword = req_data.get('keyword') if req_data else None
+        suffix = req_data.get('suffix') if req_data else None
+        max_preview_chars = req_data.get('max_preview_chars', 500) if req_data else 500
+
+        if not keyword:
+            return jsonify({'error': 'keyword가 필요합니다.'}), 400
+
+        print(f"\n[문서 검색] 키워드: {keyword}, suffix: {suffix}")
+
+        # 유사도 기반 문서 검색
+        best_idx, best_doc, matched_title, similarity = find_most_similar_document(
+            title_list, title_to_indices, data, keyword, suffix=suffix, verbose=False
+        )
+
+        if best_idx is None or not best_doc:
+            return jsonify({'error': f"'{keyword}' 관련 문서를 찾을 수 없습니다."}), 404
+
+        full_text = best_doc.get('text', '') or ''
+        preview = full_text[:max_preview_chars]
+
+        return jsonify({
+            'success': True,
+            'keyword': keyword,
+            'suffix': suffix,
+            'index': best_idx,
+            'original_title': best_doc.get('title', ''),
+            'matched_title': matched_title,
+            'similarity': similarity,
+            'preview': preview,
+            'full_text_length': len(full_text),
+        })
+
+    except Exception as e:
+        print(f"에러 발생: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/crawl-documents', methods=['POST'])
 def crawl_documents():
     """인물명 리스트를 받아서 나무위키에서 문서 크롤링"""
